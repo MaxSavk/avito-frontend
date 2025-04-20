@@ -9,7 +9,7 @@ export default function BoardsPage() {
     useEffect(() => {
         fetchBoards()
             .then((res) => {
-                setBoards(res.data.data); // <-- вот сюда берём именно res.data.data
+                setBoards(res.data.data); 
             })
             .catch(console.error)
             .finally(() => setLoading(false));
