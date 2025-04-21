@@ -6,7 +6,9 @@ export default function Header() {
             <Link to="/boards" style={{ marginRight: 10 }}>
                 Доски
             </Link>
-            {/* <Link to="/issues">Задачи</Link> */}
+            <Link to="/issues" style={{ marginRight: 10 }}>
+                Все задачи
+            </Link>
         </nav>
     );
 }
