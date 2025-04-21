@@ -1,10 +1,7 @@
-// src/router/index.jsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-import BoardsPage       from '../pages/BoardsPage';
-import BoardDetailPage  from '../pages/BoardDetailPage';
-import IssuesPage       from '../pages/IssuesPage';
-
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import BoardsPage from '../pages/BoardsPage';
+import BoardDetailPage from '../pages/BoardDetailPage';
+import IssuesPage from '../pages/IssuesPage';
 import Layout from '../components/Layout';
 
 export default function AppRouter() {
@@ -35,14 +32,7 @@ export default function AppRouter() {
             </Layout>
           }
         />
-        <Route
-          path="*"
-          element={
-            <Layout>
-              <BoardsPage />
-            </Layout>
-          }
-        />
+        <Route path="*" element={<Navigate to="/boards" replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,5 +1,4 @@
-// src/pages/IssuesPage.jsx
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 import {
@@ -18,15 +17,26 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-import { fetchAllTasks } from '../api/tasks.js';
-import { api } from '../api/index.js';
-
-import TaskModal from '../components/TaskModal.jsx';
+import { fetchAllTasks } from '../api/tasks';
+import { api } from '../api';
+import TaskModal from '../components/TaskModal';
 
 export default function IssuesPage() {
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const loadTasks = () =>
+    fetchAllTasks()
+      .then((res) => setTasks(res.data.data))
+      .catch(console.error);
+
+  useEffect(() => {
+    Promise.all([
+      loadTasks(),
+      api.get('/users').then((res) => setUsers(res.data.data)),
+    ]).finally(() => setLoading(false));
+  }, []);
 
   const [filterStatus, setFilterStatus] = useState('');
   const [filterBoard, setFilterBoard] = useState('');
@@ -39,20 +49,6 @@ export default function IssuesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const paramTaskId = searchParams.get('task');
-
-  const loadTasks = () =>
-    fetchAllTasks()
-      .then((res) => setTasks(res.data.data))
-      .catch(console.error);
-
-  useEffect(() => {
-    Promise.all([
-      loadTasks(),
-      api.get('/users').then((res) => setUsers(res.data.data)),
-    ])
-      .finally(() => setLoading(false))
-      .catch(console.error);
-  }, []);
 
   useEffect(() => {
     if (!loading && paramTaskId) {
@@ -88,31 +84,16 @@ export default function IssuesPage() {
     [tasks, filterStatus, filterBoard, filterAssignee, search],
   );
 
-  const handleTaskClick = (t) => {
-    setEditData({
-      id: t.id,
-      title: t.title,
-      description: t.description,
-      priority: t.priority,
-      status: t.status,
-      assigneeId: t.assignee.id,
-      boardId: t.boardId,
-    });
-    setModalOpen(true);
-    setSearchParams({ task: String(t.id) });
-  };
+  const boardOptions = [
+    ...new Map(tasks.map((t) => [t.boardId, t.boardName])).entries(),
+  ];
 
-  if (loading) {
+  if (loading)
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
         <CircularProgress />
       </Box>
     );
-  }
-
-  const boardOptions = [
-    ...new Map(tasks.map((t) => [t.boardId, t.boardName])).entries(),
-  ];
 
   return (
     <>
@@ -183,7 +164,22 @@ export default function IssuesPage() {
         <Paper>
           <List disablePadding>
             {visible.map((t) => (
-              <ListItemButton key={t.id} onClick={() => handleTaskClick(t)}>
+              <ListItemButton
+                key={t.id}
+                onClick={() => {
+                  setEditData({
+                    id: t.id,
+                    title: t.title,
+                    description: t.description,
+                    priority: t.priority,
+                    status: t.status,
+                    assigneeId: t.assignee.id,
+                    boardId: t.boardId,
+                  });
+                  setModalOpen(true);
+                  setSearchParams({ task: String(t.id) });
+                }}
+              >
                 <ListItemText
                   primary={t.title}
                   secondary={`${t.status} • доска: ${t.boardName}`}

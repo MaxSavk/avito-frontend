@@ -1,18 +1,14 @@
-// src/pages/BoardsPage.jsx
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-
-import { fetchBoards } from '../api/boards.js';
-
+import { useEffect, useState } from 'react';
+import { fetchBoards } from '../api/boards';
 import {
-  Box,
+  Typography,
   Paper,
   List,
   ListItemButton,
   ListItemText,
   CircularProgress,
-  Typography,
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 export default function BoardsPage() {
   const [boards, setBoards] = useState([]);
@@ -21,32 +17,29 @@ export default function BoardsPage() {
   useEffect(() => {
     fetchBoards()
       .then((res) => setBoards(res.data.data))
-      .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
+  if (loading)
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+      <Paper sx={{ p: 4, textAlign: 'center' }}>
         <CircularProgress />
-      </Box>
+      </Paper>
     );
-  }
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+    <>
+      <Typography variant="h4" gutterBottom>
         Доски
       </Typography>
 
-      {boards.length ? (
+      <Paper elevation={1}>
         <List disablePadding>
           {boards.map((b) => (
             <ListItemButton
               key={b.id}
               component={Link}
               to={`/board/${b.id}`}
-              sx={{ borderRadius: 1, mb: 1 }}
             >
               <ListItemText
                 primary={b.name}
@@ -55,9 +48,7 @@ export default function BoardsPage() {
             </ListItemButton>
           ))}
         </List>
-      ) : (
-        <Typography>Нет доступных досок.</Typography>
-      )}
-    </Paper>
+      </Paper>
+    </>
   );
 }

@@ -1,5 +1,4 @@
-// src/pages/BoardDetailPage.jsx
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
@@ -12,16 +11,14 @@ import {
   Stack,
 } from '@mui/material';
 
-import { fetchBoardTasks } from '../api/boards.js';
-import { updateTaskStatus } from '../api/tasks.js';
-
-import TaskModal from '../components/TaskModal.jsx';
+import { fetchBoardTasks } from '../api/boards';
+import { updateTaskStatus } from '../api/tasks';
+import TaskModal from '../components/TaskModal';
 
 const STATUSES = ['Backlog', 'InProgress', 'Done'];
 
 export default function BoardDetailPage() {
   const { id } = useParams();
-
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,10 +29,8 @@ export default function BoardDetailPage() {
     setLoading(true);
     fetchBoardTasks(id)
       .then((res) => setTasks(res.data.data))
-      .catch(console.error)
       .finally(() => setLoading(false));
   };
-
   useEffect(loadTasks, [id]);
 
   const onDragEnd = async ({ source, destination, draggableId }) => {
@@ -64,13 +59,12 @@ export default function BoardDetailPage() {
     [tasks],
   );
 
-  if (loading) {
+  if (loading)
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
         <CircularProgress />
       </Box>
     );
-  }
 
   return (
     <>
@@ -84,7 +78,11 @@ export default function BoardDetailPage() {
 
         <Button
           variant="contained"
-          startIcon={<Box component="span" sx={{ fontWeight: 'bold' }}>+</Box>}
+          startIcon={
+            <Box component="span" sx={{ fontSize: 20, lineHeight: 1 }}>
+              +
+            </Box>
+          }
           onClick={() => {
             setEditData({ boardId: Number(id) });
             setModalOpen(true);
@@ -102,12 +100,7 @@ export default function BoardDetailPage() {
                 <Paper
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  sx={{
-                    width: 260,
-                    p: 2,
-                    bgcolor: 'grey.50',
-                    flexShrink: 0,
-                  }}
+                  sx={{ width: 260, p: 2, flexShrink: 0, bgcolor: 'grey.50' }}
                 >
                   <Typography
                     variant="subtitle1"

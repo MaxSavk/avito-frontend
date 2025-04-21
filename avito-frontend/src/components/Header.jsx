@@ -1,14 +1,27 @@
-import { Link } from "react-router-dom";
+import { AppBar, Toolbar, Button } from '@mui/material';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Header() {
-    return (
-        <nav style={{ padding: 10, borderBottom: "1px solid #ccc" }}>
-            <Link to="/boards" style={{ marginRight: 10 }}>
-                Доски
-            </Link>
-            <Link to="/issues" style={{ marginRight: 10 }}>
-                Все задачи
-            </Link>
-        </nav>
-    );
+  const { pathname } = useLocation();
+
+  const linkBtn = (to, label) => (
+    <Button
+      component={Link}
+      to={to}
+      color="inherit"
+      variant={pathname.startsWith(to) ? 'contained' : 'text'}
+      sx={{ textTransform: 'none', mr: 1 }}
+    >
+      {label}
+    </Button>
+  );
+
+  return (
+    <AppBar position="static" color="default" elevation={0}>
+      <Toolbar sx={{ p: 1 }}>
+        {linkBtn('/boards', 'Доски')}
+        {linkBtn('/issues', 'Все задачи')}
+      </Toolbar>
+    </AppBar>
+  );
 }
