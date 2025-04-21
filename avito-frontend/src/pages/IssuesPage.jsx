@@ -1,47 +1,62 @@
-import React, { useEffect, useState } from "react";
-import { fetchAllTasks } from "../api/tasks";
-import Header from "../components/Header";
-import TaskModal from "../components/TaskModal";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { api } from "../api/index.js";
+// src/pages/IssuesPage.jsx
+import React, { useEffect, useState, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+
+import {
+  Box,
+  Stack,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Paper,
+  List,
+  ListItemButton,
+  ListItemText,
+  CircularProgress,
+} from '@mui/material';
+
+import { fetchAllTasks } from '../api/tasks.js';
+import { api } from '../api/index.js';
+
+import TaskModal from '../components/TaskModal.jsx';
 
 export default function IssuesPage() {
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterBoard, setFilterBoard] = useState("");
-  const [filterAssignee, setFilterAssignee] = useState("");
-  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterBoard, setFilterBoard] = useState('');
+  const [filterAssignee, setFilterAssignee] = useState('');
+  const [search, setSearch] = useState('');
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState({});
 
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const paramTaskId = searchParams.get("task");
+  const paramTaskId = searchParams.get('task');
 
-  // 1) Загружаем все задачи
-  useEffect(() => {
+  const loadTasks = () =>
     fetchAllTasks()
       .then((res) => setTasks(res.data.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .catch(console.error);
 
-  // 2) Загружаем список пользователей для фильтра
   useEffect(() => {
-    api
-      .get("/users")
-      .then((res) => setUsers(res.data.data))
+    Promise.all([
+      loadTasks(),
+      api.get('/users').then((res) => setUsers(res.data.data)),
+    ])
+      .finally(() => setLoading(false))
       .catch(console.error);
   }, []);
 
-  // 3) Открываем модалку по ?task=
   useEffect(() => {
     if (!loading && paramTaskId) {
-      const t = tasks.find((t) => String(t.id) === paramTaskId);
+      const t = tasks.find((x) => String(x.id) === paramTaskId);
       if (t) {
         setEditData({
           id: t.id,
@@ -57,18 +72,21 @@ export default function IssuesPage() {
     }
   }, [loading, tasks, paramTaskId]);
 
-  if (loading) return <p>Загрузка всех задач…</p>;
-
-  // 4) Применяем все фильтры
-  const visible = tasks
-    .filter((t) => !filterStatus || t.status === filterStatus)
-    .filter((t) => !filterBoard || String(t.boardId) === filterBoard)
-    .filter(
-      (t) => !filterAssignee || String(t.assignee.id) === filterAssignee
-    )
-    .filter((t) =>
-      !search ? true : t.title.toLowerCase().includes(search.toLowerCase())
-    );
+  const visible = useMemo(
+    () =>
+      tasks
+        .filter((t) => !filterStatus || t.status === filterStatus)
+        .filter((t) => !filterBoard || String(t.boardId) === filterBoard)
+        .filter(
+          (t) => !filterAssignee || String(t.assignee.id) === filterAssignee,
+        )
+        .filter((t) =>
+          search
+            ? t.title.toLowerCase().includes(search.toLowerCase())
+            : true,
+        ),
+    [tasks, filterStatus, filterBoard, filterAssignee, search],
+  );
 
   const handleTaskClick = (t) => {
     setEditData({
@@ -84,96 +102,113 @@ export default function IssuesPage() {
     setSearchParams({ task: String(t.id) });
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  const boardOptions = [
+    ...new Map(tasks.map((t) => [t.boardId, t.boardName])).entries(),
+  ];
+
   return (
     <>
-      <Header />
-      <div style={{ padding: 20 }}>
-        <h1>Все задачи</h1>
+      <Typography variant="h4" gutterBottom>
+        Все задачи
+      </Typography>
 
-        <div style={{ marginBottom: 16, display: "flex", gap: 8 }}>
-          <input
-            placeholder="Поиск по названию…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{ mb: 3 }}
+      >
+        <TextField
+          label="Поиск по названию"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          fullWidth
+        />
 
-          <select
+        <FormControl sx={{ minWidth: 140 }}>
+          <InputLabel>Статус</InputLabel>
+          <Select
+            label="Статус"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="">— Все статусы —</option>
-            <option>Backlog</option>
-            <option>InProgress</option>
-            <option>Done</option>
-          </select>
+            <MenuItem value="">Все</MenuItem>
+            <MenuItem value="Backlog">Backlog</MenuItem>
+            <MenuItem value="InProgress">In Progress</MenuItem>
+            <MenuItem value="Done">Done</MenuItem>
+          </Select>
+        </FormControl>
 
-          <select
+        <FormControl sx={{ minWidth: 140 }}>
+          <InputLabel>Доска</InputLabel>
+          <Select
+            label="Доска"
             value={filterBoard}
             onChange={(e) => setFilterBoard(e.target.value)}
           >
-            <option value="">— Все доски —</option>
-            {[...new Set(tasks.map((t) => t.boardId))]
-              .map((id) => {
-                const name = tasks.find((t) => t.boardId === id)?.boardName;
-                return { id, name };
-              })
-              .map((b) => (
-                <option key={b.id} value={String(b.id)}>
-                  {b.name}
-                </option>
-              ))}
-          </select>
+            <MenuItem value="">Все</MenuItem>
+            {boardOptions.map(([id, name]) => (
+              <MenuItem key={id} value={String(id)}>
+                {name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-          {/* Новый фильтр по исполнителю */}
-          <select
+        <FormControl sx={{ minWidth: 160 }}>
+          <InputLabel>Исполнитель</InputLabel>
+          <Select
+            label="Исполнитель"
             value={filterAssignee}
             onChange={(e) => setFilterAssignee(e.target.value)}
           >
-            <option value="">— Все исполнители —</option>
+            <MenuItem value="">Все</MenuItem>
             {users.map((u) => (
-              <option key={u.id} value={String(u.id)}>
+              <MenuItem key={u.id} value={String(u.id)}>
                 {u.fullName}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </div>
+          </Select>
+        </FormControl>
+      </Stack>
 
-        {visible.length ? (
-          <ul>
+      {visible.length ? (
+        <Paper>
+          <List disablePadding>
             {visible.map((t) => (
-              <li
-                key={t.id}
-                style={{ marginBottom: 8, cursor: "pointer" }}
-                onClick={() => handleTaskClick(t)}
-              >
-                {t.title} — {t.status} (Доска: {t.boardName})
-              </li>
+              <ListItemButton key={t.id} onClick={() => handleTaskClick(t)}>
+                <ListItemText
+                  primary={t.title}
+                  secondary={`${t.status} • доска: ${t.boardName}`}
+                />
+              </ListItemButton>
             ))}
-          </ul>
-        ) : (
-          <p>Ничего не найдено.</p>
-        )}
+          </List>
+        </Paper>
+      ) : (
+        <Typography color="text.secondary">Ничего не найдено.</Typography>
+      )}
 
-        <TaskModal
-          isOpen={isModalOpen}
-          initialData={editData}
-          showBoardLink={true}
-          onGoToBoard={() => {
-            navigate(
-              `/board/${editData.boardId}?task=${editData.id}`
-            );
-          }}
-          onClose={(didChange) => {
-            setModalOpen(false);
-            setSearchParams({});
-            if (didChange) {
-              fetchAllTasks()
-                .then((res) => setTasks(res.data.data))
-                .catch(console.error);
-            }
-          }}
-        />
-      </div>
+      <TaskModal
+        isOpen={isModalOpen}
+        initialData={editData}
+        showBoardLink
+        onGoToBoard={() =>
+          navigate(`/board/${editData.boardId}?task=${editData.id}`)
+        }
+        onClose={(didChange) => {
+          setModalOpen(false);
+          setSearchParams({});
+          if (didChange) loadTasks();
+        }}
+      />
     </>
   );
 }
