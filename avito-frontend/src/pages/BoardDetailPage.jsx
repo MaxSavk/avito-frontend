@@ -77,7 +77,7 @@ export default function BoardDetailPage() {
                 alignItems="center"
                 mb={3}
             >
-                <Typography variant="h4">Доска #{id}</Typography>
+                <Typography variant="h4">Доска {id}</Typography>
 
                 <Button
                     variant="contained"
@@ -135,9 +135,15 @@ export default function BoardDetailPage() {
                                                     sx={{
                                                         p: 1.5,
                                                         mb: 1,
+                                                        borderRadius: 1,
+                                                        backgroundColor: "#fff",
                                                         cursor: "pointer",
+                                                        transition:
+                                                            "box-shadow 0.2s",
                                                         ...(p.isDragging && {
                                                             boxShadow: 6,
+                                                            backgroundColor:
+                                                                "#f0f0f0",
                                                         }),
                                                     }}
                                                     onClick={() => {

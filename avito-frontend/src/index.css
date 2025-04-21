@@ -11,6 +11,12 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    --font-main: "Roboto", sans-serif;
+    --bg-light: #f5f7fa;
+    --bg-white: #ffffff;
+    --text-primary: #212121;
+    --text-secondary: #555;
+    --primary: #1976d2;
 }
 
 a {

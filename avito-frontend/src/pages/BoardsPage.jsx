@@ -33,7 +33,15 @@ export default function BoardsPage() {
                 Доски
             </Typography>
 
-            <Paper elevation={1}>
+            <Paper
+                elevation={1}
+                sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    backgroundColor: "#fff",
+                    boxShadow: "0 1px 4px rgba(0, 0, 0, 0.03)",
+                }}
+            >
                 <List disablePadding>
                     {boards.map((b) => (
                         <ListItemButton
