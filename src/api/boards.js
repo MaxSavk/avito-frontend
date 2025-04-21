@@ -1,8 +1,9 @@
 import { api } from "./index.js";
 
 export function fetchBoards() {
-    return api.get("/boards");
+  return api.get("/boards");
 }
 
-export const fetchBoardTasks = (boardId) =>
-  api.get(`/boards/${boardId}`);
+export function fetchBoardTasks(boardId) {
+  return api.get(`/boards/${boardId}`);
+}

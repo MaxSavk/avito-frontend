@@ -1,0 +1,37 @@
+.board-detail {
+    padding: 20px;
+  }
+  
+  .board-columns {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  
+  .board-column {
+    background: #f4f5f7;
+    border-radius: 4px;
+    padding: 12px;
+    width: 240px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .column-title {
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+    color: #333;
+    text-align: center;
+  }
+  
+  .task-card {
+    background: #fff;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    word-break: break-word;
+    color: #000;
+  }
